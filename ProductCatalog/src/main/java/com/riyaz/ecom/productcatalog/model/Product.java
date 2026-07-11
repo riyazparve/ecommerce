@@ -1,4 +1,4 @@
-package com.riyaz.ecom.productservice.model;
+package com.riyaz.ecom.productcatalog.model;
 
 import lombok.Data;
 
@@ -9,4 +9,6 @@ public class Product extends BaseModel {
     private Category category;
     private Double price;
     private String imageUrl;
+
+    private Boolean isPrimeProduct; // this data should not be exposed to external entities
 }

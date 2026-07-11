@@ -1,4 +1,4 @@
-package com.riyaz.ecom.productservice.model;
+package com.riyaz.ecom.productcatalog.model;
 
 public enum Status {
     ACTIVE,

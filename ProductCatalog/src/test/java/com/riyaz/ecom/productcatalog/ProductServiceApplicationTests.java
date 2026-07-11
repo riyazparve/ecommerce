@@ -1,4 +1,4 @@
-package com.riyaz.ecom.productservice;
+package com.riyaz.ecom.productcatalog;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
