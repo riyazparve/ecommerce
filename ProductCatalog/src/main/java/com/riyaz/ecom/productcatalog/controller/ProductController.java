@@ -7,6 +7,7 @@ import com.riyaz.ecom.productcatalog.model.Product;
 import com.riyaz.ecom.productcatalog.service.IProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -26,15 +27,31 @@ public class ProductController {
 //    }
 
     @GetMapping
-    public List<ProductDto> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        return products.stream().map(ProductDtoMapper::toDto).toList();
+    public ResponseEntity<List<ProductDto>> getAllProducts() {
+        List<Product> responseAllProductList = productService.getAllProducts();
+        return ResponseEntity.ok(responseAllProductList.stream().map(ProductDtoMapper::toDto).toList());
     }
 
     @GetMapping("/{productId}")
-    public ProductDto getProductById(@PathVariable("productId") Long id) {
-        return ProductDtoMapper.toDto(productService.getProductById(id));
+    public ResponseEntity<ProductDto> getProductById(@PathVariable("productId") Long id) {
+        if (id <= 0) {
+//            return ResponseEntity.badRequest().build();
+            throw new IllegalArgumentException("productId should be greater than 0");
+        }
+        Product product = productService.getProductById(id);
+        if (product == null) {
+//            return ResponseEntity.notFound().build();
+            throw new IllegalArgumentException("No product found with productId = " + id);
+        }
+        ProductDto responseProductDto = ProductDtoMapper.toDto(product);
+        return ResponseEntity.ok(responseProductDto);
     }
 
+    @PostMapping
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
+        Product request = ProductDtoMapper.toEntity(productDto);
+        Product response = productService.createProduct(request);
+        return ResponseEntity.ok(ProductDtoMapper.toDto(response));
+    }
 
 }

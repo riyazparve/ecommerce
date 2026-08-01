@@ -4,7 +4,8 @@ import com.riyaz.ecom.productcatalog.dto.FakeStoreProductDto;
 import com.riyaz.ecom.productcatalog.model.Product;
 
 public class FakeStoreProductDtoMapper {
-    public static Product fromDto(FakeStoreProductDto dto) {
+    public static Product toEntity(FakeStoreProductDto dto) {
+        if (dto == null) {return null;}
         Product product = new Product();
         product.setId(dto.getId());
         product.setName(dto.getTitle());

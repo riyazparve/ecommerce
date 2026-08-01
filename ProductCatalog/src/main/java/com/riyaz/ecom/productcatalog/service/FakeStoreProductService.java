@@ -26,13 +26,19 @@ public class FakeStoreProductService implements IProductService {
     @Override
     public List<Product> getAllProducts() {
         List<FakeStoreProductDto> fakeStoreProductDtoList = fakeStoreClient.getAllFakeStoreProducts();
-        return fakeStoreProductDtoList.stream().map(FakeStoreProductDtoMapper::fromDto).toList();
+        return fakeStoreProductDtoList.stream().map(FakeStoreProductDtoMapper::toEntity).toList();
     }
 
     @Override
     public Product getProductById(Long id) {
         FakeStoreProductDto productDto = fakeStoreClient.getFakeStoreProductsById(id);
-        return FakeStoreProductDtoMapper.fromDto(productDto);
+        return FakeStoreProductDtoMapper.toEntity(productDto);
+    }
+
+    @Override
+    public Product createProduct(Product product) {
+        product.setId(2L);
+        return product;
     }
 
 }
