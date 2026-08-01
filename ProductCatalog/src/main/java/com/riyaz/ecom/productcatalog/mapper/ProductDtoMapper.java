@@ -14,6 +14,17 @@ public class ProductDtoMapper {
         productDto.setDescription(product.getDescription());
         productDto.setPrice(product.getPrice());
         productDto.setImageUrl(product.getImageUrl());
+        
+        // Map category to DTO
+        Category category = product.getCategory();
+        if (category != null) {
+            CategoryDto categoryDto = new CategoryDto();
+            categoryDto.setId(category.getId());
+            categoryDto.setName(category.getName());
+            categoryDto.setDescription(category.getDescription());
+            productDto.setCategory(categoryDto);
+        }
+        
         return productDto;
     }
 

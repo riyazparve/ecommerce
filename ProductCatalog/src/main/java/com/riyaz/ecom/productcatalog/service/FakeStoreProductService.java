@@ -13,12 +13,16 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Qualifier("fakeStoreProductService")
 public class FakeStoreProductService implements IProductService {
+
+    @Autowired
+    private RestTemplateBuilder restTemplateBuilder;
 
     @Autowired
     private FakeStoreClient fakeStoreClient;

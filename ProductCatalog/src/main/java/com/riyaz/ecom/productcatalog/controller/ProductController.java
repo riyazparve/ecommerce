@@ -18,7 +18,7 @@ import java.util.List;
 public class ProductController {
 
     @Autowired
-    @Qualifier("fakeStoreProductService")
+//    @Qualifier("fakeStoreProductService")
     private IProductService productService;
 
 //    Wiring beans using Constructor Inject this is replaced by @Autowired
