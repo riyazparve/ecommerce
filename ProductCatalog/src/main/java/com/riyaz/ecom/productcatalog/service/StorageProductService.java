@@ -17,6 +17,7 @@ import java.util.Optional;
 public class StorageProductService implements IProductService{
     @Autowired
     private ProductRepository productRepository;
+
     @Autowired
     private CategoryRepository categoryRepository;
 
@@ -27,6 +28,10 @@ public class StorageProductService implements IProductService{
 
     @Override
     public Product getProductById(Long id) {
+        if (id <= 0) {
+//            return ResponseEntity.badRequest().build();
+            throw new IllegalArgumentException("productId should be greater than 0");
+        }
         return productRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + id));
     }

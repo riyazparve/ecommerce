@@ -1,57 +1,51 @@
 package com.riyaz.ecom.productcatalog.controller;
 
-import com.riyaz.ecom.productcatalog.dto.CategoryDto;
 import com.riyaz.ecom.productcatalog.dto.ProductDto;
+import com.riyaz.ecom.productcatalog.exception.ProductNotFoundException;
 import com.riyaz.ecom.productcatalog.mapper.ProductDtoMapper;
 import com.riyaz.ecom.productcatalog.model.Product;
 import com.riyaz.ecom.productcatalog.service.IProductService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.riyaz.ecom.productcatalog.validator.ProductValidator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
+    private final IProductService productService;
+    private final ProductValidator productValidator;
+    private final ProductDtoMapper productDtoMapper;
 
-    @Autowired
-//    @Qualifier("fakeStoreProductService")
-    private IProductService productService;
+    public ProductController(IProductService productService, ProductValidator productValidator, ProductDtoMapper productDtoMapper) {
+        this.productService = productService;
+        this.productValidator = productValidator;
+        this.productDtoMapper = productDtoMapper;
+    }
 
-//    Wiring beans using Constructor Inject this is replaced by @Autowired
-//    public ProductController(IProductService productService) {
-//        this.productService = productService;
-//    }
 
     @GetMapping
     public ResponseEntity<List<ProductDto>> getAllProducts() {
-        List<Product> responseAllProductList = productService.getAllProducts();
-        return ResponseEntity.ok(responseAllProductList.stream().map(ProductDtoMapper::toDto).toList());
+        List<Product> products = productService.getAllProducts();
+        return ResponseEntity.ok(products.stream().map(productDtoMapper::toDto).toList());
     }
 
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable("productId") Long id) {
-        if (id <= 0) {
-//            return ResponseEntity.badRequest().build();
-            throw new IllegalArgumentException("productId should be greater than 0");
-        }
+        productValidator.validateProductId(id);
         Product product = productService.getProductById(id);
         if (product == null) {
-//            return ResponseEntity.notFound().build();
-            throw new IllegalArgumentException("No product found with productId = " + id);
+            throw new ProductNotFoundException(id);
         }
-        ProductDto responseProductDto = ProductDtoMapper.toDto(product);
-        return ResponseEntity.ok(responseProductDto);
+        return ResponseEntity.ok(productDtoMapper.toDto(product));
     }
 
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto) {
-        Product request = ProductDtoMapper.toEntity(productDto);
+        Product request = productDtoMapper.toEntity(productDto);
         Product response = productService.createProduct(request);
-        return ResponseEntity.ok(ProductDtoMapper.toDto(response));
+        return ResponseEntity.ok(productDtoMapper.toDto(response));
     }
 
 }
