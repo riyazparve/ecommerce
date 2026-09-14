@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ public class ProductController {
         this.productDtoMapper = productDtoMapper;
     }
 
+    // This API needs pagination reading all product at once is not a good design practise
     @GetMapping
     public ResponseEntity<List<ProductDto>> getAllProducts() {
         List<Product> products = productService.getAllProducts();
@@ -51,6 +53,18 @@ public class ProductController {
         return ResponseEntity.ok(productDtoMapper.toDto(response));
     }
 
+
+    @PostMapping("/all")
+    public ResponseEntity<List<ProductDto>> createProduct(@RequestBody List<ProductDto> productDtoList) {
+        List<ProductDto> responseList = new ArrayList<>();
+        for (ProductDto productDto : productDtoList) {
+            Product request = productDtoMapper.toEntity(productDto);
+            Product response = productService.createProduct(request);
+            responseList.add(productDtoMapper.toDto(response));
+        }
+        return ResponseEntity.ok(responseList);
+    }
+
     @PutMapping("/{productId}")
     public ResponseEntity<ProductDto> replaceProduct(@PathVariable("productId") Long id, @RequestBody ProductDto productDto) {
         Product request = productDtoMapper.toEntity(productDto);
@@ -71,5 +85,4 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    //TODO 2.1. Browsing: Users should be able to browse products by different categories.
 }

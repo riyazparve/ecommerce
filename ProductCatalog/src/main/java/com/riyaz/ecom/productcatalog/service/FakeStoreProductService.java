@@ -11,7 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service("fakeStoreProductService")
+@Service
+@Qualifier("fakeStoreProductService")
 @ConditionalOnProperty(name = "product.service.selected-service", havingValue = "fakeStoreProductService")
 public class FakeStoreProductService implements IProductService {
 
@@ -70,3 +71,4 @@ public class FakeStoreProductService implements IProductService {
     }
 
 }
+
