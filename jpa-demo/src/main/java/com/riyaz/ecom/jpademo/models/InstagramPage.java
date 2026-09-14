@@ -18,7 +18,7 @@ public class InstagramPage {
     private Set<InstagramPost> posts = new HashSet<>();
 
     @ManyToOne
-    @JoinColumn(name = "creator_id")
+//    @JoinColumn(name = "creator_id")
     private InstagramUser creator;
 }
 
