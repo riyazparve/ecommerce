@@ -6,6 +6,7 @@ import com.riyaz.ecom.productcatalog.mapper.ProductDtoMapper;
 import com.riyaz.ecom.productcatalog.model.Product;
 import com.riyaz.ecom.productcatalog.service.IProductService;
 import com.riyaz.ecom.productcatalog.validator.ProductValidator;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,11 +37,13 @@ class ProductControllerTest {
     private ProductController productController;
 
     @Test
-    void getAllProducts_returnsMappedDtos() {
+    void getAllProducts_returnsMappedDTOs() {
+        String laptop = "Laptop";
+
         Product product = new Product();
-        product.setName("Laptop");
+        product.setName(laptop);
         ProductDto dto = new ProductDto();
-        dto.setName("Laptop");
+        dto.setName(laptop);
 
         when(productService.getAllProducts()).thenReturn(List.of(product));
         when(productDtoMapper.toDto(product)).thenReturn(dto);
@@ -48,45 +51,53 @@ class ProductControllerTest {
         ResponseEntity<List<ProductDto>> response = productController.getAllProducts();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
-        assertEquals("Laptop", response.getBody().get(0).getName());
-        verify(productService).getAllProducts();
+        assertEquals(laptop, response.getBody().get(0).getName());
+        verify(productService).getAllProducts(); //verify getAllProducts was called only once
     }
 
     @Test
-    void getProductById_validatesAndReturnsDto() {
-        Product product = new Product();
-        product.setName("Phone");
-        ProductDto dto = new ProductDto();
-        dto.setName("Phone");
+    void getProductById_validatesAndReturnsDTO() {
+        String phone = "Phone";
+        long id = 7L;
 
-        when(productService.getProductById(7L)).thenReturn(product);
+        Product product = new Product();
+        product.setName(phone);
+        ProductDto dto = new ProductDto();
+        dto.setName(phone);
+
+        when(productService.getProductById(id)).thenReturn(product);
         when(productDtoMapper.toDto(product)).thenReturn(dto);
 
-        ResponseEntity<ProductDto> response = productController.getProductById(7L);
+        ResponseEntity<ProductDto> response = productController.getProductById(id);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Phone", response.getBody().getName());
-        verify(productValidator).validateProductId(7L);
-        verify(productService).getProductById(7L);
+        Assertions.assertNotNull(response.getBody());
+        assertEquals(phone, response.getBody().getName());
+        verify(productValidator).validateProductId(id);
+        verify(productService).getProductById(id);
     }
 
     @Test
     void getProductById_whenServiceReturnsNull_throwsNotFound() {
-        when(productService.getProductById(9L)).thenReturn(null);
+        long id = 9L;
+        when(productService.getProductById(id)).thenReturn(null);
 
-        assertThrows(ProductNotFoundException.class, () -> productController.getProductById(9L));
-        verify(productValidator).validateProductId(9L);
+        assertThrows(ProductNotFoundException.class, () -> productController.getProductById(id));
+        verify(productValidator).validateProductId(id);
     }
 
     @Test
-    void createProduct_returnsCreatedDto() {
+    void createProduct_returnsCreatedDTO() {
+        String tablet = "Tablet";
+
         Product product = new Product();
-        product.setName("Tablet");
+        product.setName(tablet);
         ProductDto requestDto = new ProductDto();
-        requestDto.setName("Tablet");
+        requestDto.setName(tablet);
         ProductDto responseDto = new ProductDto();
-        responseDto.setName("Tablet");
+        responseDto.setName(tablet);
 
         when(productDtoMapper.toEntity(requestDto)).thenReturn(product);
         when(productService.createProduct(product)).thenReturn(product);
@@ -95,19 +106,23 @@ class ProductControllerTest {
         ResponseEntity<ProductDto> response = productController.createProduct(requestDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Tablet", response.getBody().getName());
+        Assertions.assertNotNull(response.getBody());
+        assertEquals(tablet, response.getBody().getName());
     }
 
     @Test
-    void createProducts_returnsListOfDtos() {
+    void createProducts_returnsListOfDTOs() {
+        String a = "A";
+        String b = "B";
+
         ProductDto first = new ProductDto();
-        first.setName("A");
+        first.setName(a);
         ProductDto second = new ProductDto();
-        second.setName("B");
+        second.setName(b);
         Product productA = new Product();
-        productA.setName("A");
+        productA.setName(a);
         Product productB = new Product();
-        productB.setName("B");
+        productB.setName(b);
 
         when(productDtoMapper.toEntity(first)).thenReturn(productA);
         when(productDtoMapper.toEntity(second)).thenReturn(productB);
@@ -119,54 +134,65 @@ class ProductControllerTest {
         ResponseEntity<List<ProductDto>> response = productController.createProduct(List.of(first, second));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertNotNull(response.getBody());
         assertEquals(2, response.getBody().size());
-        assertEquals("A", response.getBody().get(0).getName());
-        assertEquals("B", response.getBody().get(1).getName());
+        assertEquals(a, response.getBody().get(0).getName());
+        assertEquals(b, response.getBody().get(1).getName());
     }
 
     @Test
-    void replaceProduct_returnsUpdatedDto() {
+    void replaceProduct_returnsUpdatedDTO() {
+        String updated = "Updated";
+        long id = 3L;
+
         ProductDto requestDto = new ProductDto();
-        requestDto.setName("Updated");
+        requestDto.setName(updated);
         Product product = new Product();
-        product.setName("Updated");
+        product.setName(updated);
         ProductDto responseDto = new ProductDto();
-        responseDto.setName("Updated");
+        responseDto.setName(updated);
 
         when(productDtoMapper.toEntity(requestDto)).thenReturn(product);
-        when(productService.replaceProduct(3L, product)).thenReturn(product);
+        when(productService.replaceProduct(id, product)).thenReturn(product);
         when(productDtoMapper.toDto(product)).thenReturn(responseDto);
 
-        ResponseEntity<ProductDto> response = productController.replaceProduct(3L, requestDto);
+        ResponseEntity<ProductDto> response = productController.replaceProduct(id, requestDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Updated", response.getBody().getName());
+        Assertions.assertNotNull(response.getBody());
+        assertEquals(updated, response.getBody().getName());
     }
 
     @Test
     void updateProduct_returnsUpdatedDto() {
+        String patched = "Patched";
+        long id = 4L;
+
         ProductDto requestDto = new ProductDto();
-        requestDto.setName("Patched");
+        requestDto.setName(patched);
         Product product = new Product();
-        product.setName("Patched");
+        product.setName(patched);
         ProductDto responseDto = new ProductDto();
-        responseDto.setName("Patched");
+        responseDto.setName(patched);
 
         when(productDtoMapper.toEntity(requestDto)).thenReturn(product);
-        when(productService.updateProduct(4L, product)).thenReturn(product);
+        when(productService.updateProduct(id, product)).thenReturn(product);
         when(productDtoMapper.toDto(product)).thenReturn(responseDto);
 
-        ResponseEntity<ProductDto> response = productController.updateProduct(4L, requestDto);
+        ResponseEntity<ProductDto> response = productController.updateProduct(id, requestDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Patched", response.getBody().getName());
+        Assertions.assertNotNull(response.getBody());
+        assertEquals(patched, response.getBody().getName());
     }
 
     @Test
     void deleteProduct_returnsNoContent() {
-        ResponseEntity<ProductDto> response = productController.deleteProduct(5L);
+        long id = 5L;
 
+        ResponseEntity<ProductDto> response = productController.deleteProduct(id);
+        
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        verify(productService).deleteProduct(5L);
+        verify(productService).deleteProduct(id);
     }
 }

@@ -45,12 +45,14 @@ class SearchControllerTest {
 
     @Test
     void getProductsByName_delegatesToSearchService() {
+        String phone = "Phone";
+
         SearchRequestDto request = new SearchRequestDto();
-        request.setSearchTerm("Phone");
+        request.setSearchTerm(phone);
         request.setPageNumber(0);
         request.setPageSize(3);
         ProductDto productDto = new ProductDto();
-        productDto.setName("Phone");
+        productDto.setName(phone);
         Page<ProductDto> expected = new PageImpl<>(List.of(productDto));
 
         when(searchService.search(request)).thenReturn(expected);
