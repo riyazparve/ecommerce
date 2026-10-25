@@ -16,8 +16,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -35,8 +34,11 @@ class FakeStoreClientTest {
     private RestTemplate restTemplate;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    void setUp() throws Exception {
+        try (AutoCloseable autoCloseable = MockitoAnnotations.openMocks(this)) {
+            // this is a try-with-resources block to ensure that the mocks are closed after use
+            assertNotNull(autoCloseable);
+        }
         fakeStoreClient = new FakeStoreClient();
         ReflectionTestUtils.setField(fakeStoreClient, "restTemplateBuilder", restTemplateBuilder);
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
@@ -44,8 +46,10 @@ class FakeStoreClientTest {
 
     @Test
     void getAllFakeStoreProducts_returnsListFromExchange() {
+        String watch = "Watch";
+
         FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Watch");
+        dto.setTitle(watch);
         ResponseEntity<List<FakeStoreProductDto>> response = new ResponseEntity<>(List.of(dto), HttpStatus.OK);
 
         when(restTemplate.exchange(eq("https://fakestoreapi.com/products"), eq(HttpMethod.GET), any(HttpEntity.class), any(ParameterizedTypeReference.class)))
@@ -54,13 +58,15 @@ class FakeStoreClientTest {
         List<FakeStoreProductDto> result = fakeStoreClient.getAllFakeStoreProducts();
 
         assertEquals(1, result.size());
-        assertEquals("Watch", result.get(0).getTitle());
+        assertEquals(watch, result.get(0).getTitle());
     }
 
     @Test
     void getFakeStoreProductsById_returnsBodyWhenSuccessful() {
+        String headphones = "Headphones";
+
         FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Headphones");
+        dto.setTitle(headphones);
         ResponseEntity<FakeStoreProductDto> response = new ResponseEntity<>(dto, HttpStatus.OK);
 
         when(restTemplate.getForEntity(anyString(), eq(FakeStoreProductDto.class), anyLong())).thenReturn(response);
@@ -68,26 +74,30 @@ class FakeStoreClientTest {
         FakeStoreProductDto result = fakeStoreClient.getFakeStoreProductsById(3L);
 
         assertNotNull(result);
-        assertEquals("Headphones", result.getTitle());
+        assertEquals(headphones, result.getTitle());
     }
 
     @Test
     void createFakeStoreProduct_returnsCreatedBody() {
+        String lamp = "Lamp";
+
         FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Lamp");
+        dto.setTitle(lamp);
         ResponseEntity<FakeStoreProductDto> response = new ResponseEntity<>(dto, HttpStatus.CREATED);
 
         when(restTemplate.postForEntity("https://fakestoreapi.com/products", dto, FakeStoreProductDto.class)).thenReturn(response);
 
         FakeStoreProductDto result = fakeStoreClient.createFakeStoreProduct(dto);
 
-        assertEquals("Lamp", result.getTitle());
+        assertEquals(lamp, result.getTitle());
     }
 
     @Test
     void updateFakeStoreProduct_returnsUpdatedBody() {
+        String speaker = "Speaker";
+
         FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Speaker");
+        dto.setTitle(speaker);
         ResponseEntity<FakeStoreProductDto> response = new ResponseEntity<>(dto, HttpStatus.OK);
 
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(FakeStoreProductDto.class), anyLong()))
@@ -95,11 +105,18 @@ class FakeStoreClientTest {
 
         FakeStoreProductDto result = fakeStoreClient.updateFakeStoreProduct(10L, dto);
 
-        assertEquals("Speaker", result.getTitle());
+        assertEquals(speaker, result.getTitle());
     }
 
     @Test
     void deleteFakeStoreProduct_invokesDeleteRequest() {
-        fakeStoreClient.deleteFakeStoreProduct(8L);
+        // invoke delete and assert it does not throw an exception
+        assertDoesNotThrow(() -> fakeStoreClient.deleteFakeStoreProduct(8L));
+    }
+
+    @Test
+    void deleteFakeStoreProduct_throwsException() {
+        // invoke delete and assert it throws an exception
+        assertThrows(IllegalArgumentException.class, () -> fakeStoreClient.deleteFakeStoreProduct(null));
     }
 }

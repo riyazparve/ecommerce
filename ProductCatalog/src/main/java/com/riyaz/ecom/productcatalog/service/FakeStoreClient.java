@@ -135,6 +135,8 @@ public class FakeStoreClient {
         RestTemplate restTemplate = restTemplateBuilder.build();
         String url = BASE_URL + "/products/{id}";
         try {
+            if (id == null)
+                throw new IllegalArgumentException("Id cannot be null");
             restTemplate.delete(url, id);
         } catch (RestClientException e) {
             throw new RuntimeException(e);

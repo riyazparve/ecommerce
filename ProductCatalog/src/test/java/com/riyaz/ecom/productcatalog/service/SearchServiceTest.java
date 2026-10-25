@@ -35,11 +35,13 @@ class SearchServiceTest {
     private SearchService searchService;
 
     @Test
-    void findAll_mapsRepositoryPageToProductDtos() {
+    void findAll_mapsRepositoryPageToProductDTOs() {
+        String laptop = "Laptop";
+
         Product product = new Product();
-        product.setName("Laptop");
+        product.setName(laptop);
         ProductDto dto = new ProductDto();
-        dto.setName("Laptop");
+        dto.setName(laptop);
         Page<Product> productPage = new PageImpl<>(List.of(product));
 
         when(productRepository.findAll(any(Pageable.class))).thenReturn(productPage);
@@ -48,28 +50,30 @@ class SearchServiceTest {
         Page<ProductDto> result = searchService.findAll(PageRequest.of(0, 5));
 
         assertEquals(1, result.getContent().size());
-        assertEquals("Laptop", result.getContent().get(0).getName());
+        assertEquals(laptop, result.getContent().get(0).getName());
     }
 
     @Test
-    void search_mapsMatchingProductsToDtos() {
+    void search_mapsMatchingProductsToDTOs() {
+        String phone = "Phone";
+        
         SearchRequestDto request = new SearchRequestDto();
-        request.setSearchTerm("Phone");
+        request.setSearchTerm(phone);
         request.setPageNumber(1);
         request.setPageSize(2);
 
         Product product = new Product();
-        product.setName("Phone");
+        product.setName(phone);
         ProductDto dto = new ProductDto();
-        dto.setName("Phone");
+        dto.setName(phone);
         Page<Product> productPage = new PageImpl<>(List.of(product));
 
-        when(productRepository.findByName(eq("Phone"), any(Pageable.class))).thenReturn(productPage);
+        when(productRepository.findByName(eq(phone), any(Pageable.class))).thenReturn(productPage);
         when(productDtoMapper.toDto(product)).thenReturn(dto);
 
         Page<ProductDto> result = searchService.search(request);
 
         assertEquals(1, result.getContent().size());
-        assertEquals("Phone", result.getContent().get(0).getName());
+        assertEquals(phone, result.getContent().get(0).getName());
     }
 }

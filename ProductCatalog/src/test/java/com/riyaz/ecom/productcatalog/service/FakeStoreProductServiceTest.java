@@ -31,10 +31,12 @@ class FakeStoreProductServiceTest {
 
     @Test
     void getAllProducts_mapsDtosToEntities() {
+        String keyboard = "Keyboard";
+
         FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Keyboard");
+        dto.setTitle(keyboard);
         Product product = new Product();
-        product.setName("Keyboard");
+        product.setName(keyboard);
 
         when(fakeStoreClient.getAllFakeStoreProducts()).thenReturn(List.of(dto));
         when(fakeStoreProductDtoMapper.toEntity(dto)).thenReturn(product);
@@ -42,30 +44,35 @@ class FakeStoreProductServiceTest {
         List<Product> result = fakeStoreProductService.getAllProducts();
 
         assertEquals(1, result.size());
-        assertEquals("Keyboard", result.get(0).getName());
+        assertEquals(keyboard, result.get(0).getName());
     }
 
     @Test
     void getProductById_mapsSingleDtoToEntity() {
-        FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Mouse");
-        Product product = new Product();
-        product.setName("Mouse");
+        String mouse = "Mouse";
+        long id = 14L;
 
-        when(fakeStoreClient.getFakeStoreProductsById(14L)).thenReturn(dto);
+        FakeStoreProductDto dto = new FakeStoreProductDto();
+        dto.setTitle(mouse);
+        Product product = new Product();
+        product.setName(mouse);
+
+        when(fakeStoreClient.getFakeStoreProductsById(id)).thenReturn(dto);
         when(fakeStoreProductDtoMapper.toEntity(dto)).thenReturn(product);
 
-        Product result = fakeStoreProductService.getProductById(14L);
+        Product result = fakeStoreProductService.getProductById(id);
 
-        assertEquals("Mouse", result.getName());
+        assertEquals(mouse, result.getName());
     }
 
     @Test
     void createProduct_mapsAndPersistsCreatedProduct() {
+        String monitor = "Monitor";
+
         Product product = new Product();
-        product.setName("Monitor");
+        product.setName(monitor);
         FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Monitor");
+        dto.setTitle(monitor);
 
         when(fakeStoreProductDtoMapper.toDto(product)).thenReturn(dto);
         when(fakeStoreClient.createFakeStoreProduct(dto)).thenReturn(dto);
@@ -73,56 +80,66 @@ class FakeStoreProductServiceTest {
 
         Product result = fakeStoreProductService.createProduct(product);
 
-        assertEquals("Monitor", result.getName());
+        assertEquals(monitor, result.getName());
     }
 
     @Test
     void replaceProduct_mapsAndReturnsReplacement() {
+        String router = "Router";
+        long id = 21L;
+
         Product product = new Product();
-        product.setName("Router");
+        product.setName(router);
         FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Router");
+        dto.setTitle(router);
 
         when(fakeStoreProductDtoMapper.toDto(product)).thenReturn(dto);
-        when(fakeStoreClient.replaceFakeStoreProduct(21L, dto)).thenReturn(dto);
+        when(fakeStoreClient.replaceFakeStoreProduct(id, dto)).thenReturn(dto);
         when(fakeStoreProductDtoMapper.toEntity(dto)).thenReturn(product);
 
-        Product result = fakeStoreProductService.replaceProduct(21L, product);
+        Product result = fakeStoreProductService.replaceProduct(id, product);
 
-        assertEquals("Router", result.getName());
+        assertEquals(router, result.getName());
     }
 
     @Test
     void updateProduct_whenExistingProductMissing_throwsProductNotFound() {
+        String cable = "Cable";
+        long id = 99L;
+
         Product product = new Product();
-        product.setName("Cable");
+        product.setName(cable);
 
-        when(fakeStoreClient.getFakeStoreProductsById(99L)).thenReturn(null);
+        when(fakeStoreClient.getFakeStoreProductsById(id)).thenReturn(null);
 
-        assertThrows(ProductNotFoundException.class, () -> fakeStoreProductService.updateProduct(99L, product));
+        assertThrows(ProductNotFoundException.class, () -> fakeStoreProductService.updateProduct(id, product));
     }
 
     @Test
     void updateProduct_whenExistingProductPresent_returnsUpdatedEntity() {
-        Product product = new Product();
-        product.setName("Speaker");
-        FakeStoreProductDto dto = new FakeStoreProductDto();
-        dto.setTitle("Speaker");
+        String speaker = "Speaker";
+        long id = 17L;
 
-        when(fakeStoreClient.getFakeStoreProductsById(17L)).thenReturn(dto);
+        Product product = new Product();
+        product.setName(speaker);
+        FakeStoreProductDto dto = new FakeStoreProductDto();
+        dto.setTitle(speaker);
+
+        when(fakeStoreClient.getFakeStoreProductsById(id)).thenReturn(dto);
         when(fakeStoreProductDtoMapper.toDto(product)).thenReturn(dto);
-        when(fakeStoreClient.updateFakeStoreProduct(17L, dto)).thenReturn(dto);
+        when(fakeStoreClient.updateFakeStoreProduct(id, dto)).thenReturn(dto);
         when(fakeStoreProductDtoMapper.toEntity(dto)).thenReturn(product);
 
-        Product result = fakeStoreProductService.updateProduct(17L, product);
+        Product result = fakeStoreProductService.updateProduct(id, product);
 
-        assertEquals("Speaker", result.getName());
+        assertEquals(speaker, result.getName());
     }
 
     @Test
     void deleteProduct_delegatesToClient() {
-        fakeStoreProductService.deleteProduct(12L);
+        long id = 12L;
 
-        verify(fakeStoreClient).deleteFakeStoreProduct(12L);
+        fakeStoreProductService.deleteProduct(id);
+        verify(fakeStoreClient).deleteFakeStoreProduct(id); // verify deleteFakeStoreProduct is called only once
     }
 }

@@ -31,14 +31,16 @@ class StorageProductServiceTest {
 
     @Test
     void getAllProducts_returnsEverythingFromRepository() {
+        String chair = "Chair";
+
         Product product = new Product();
-        product.setName("Chair");
+        product.setName(chair);
         when(productRepository.findAll()).thenReturn(List.of(product));
 
         List<Product> result = storageProductService.getAllProducts();
 
         assertEquals(1, result.size());
-        assertEquals("Chair", result.get(0).getName());
+        assertEquals(chair, result.get(0).getName());
     }
 
     @Test
@@ -49,70 +51,80 @@ class StorageProductServiceTest {
 
     @Test
     void getProductById_whenIdIsValid_returnsEntity() {
+        String desk = "Desk";
+
         Product product = new Product();
-        product.setName("Desk");
+        product.setName(desk);
         when(productRepository.findById(5L)).thenReturn(Optional.of(product));
 
         Product result = storageProductService.getProductById(5L);
 
-        assertEquals("Desk", result.getName());
+        assertEquals(desk, result.getName());
     }
 
     @Test
     void createProduct_whenCategoryExists_reusesSavedCategory() {
+        String electronics = "Electronics";
+
         Category category = new Category();
-        category.setName("Electronics");
+        category.setName(electronics);
         Category storedCategory = new Category();
-        storedCategory.setName("Electronics");
+        storedCategory.setName(electronics);
         Product product = new Product();
         product.setCategory(category);
         product.setName("Monitor");
 
-        when(categoryRepository.findByName("Electronics")).thenReturn(Optional.of(storedCategory));
+        when(categoryRepository.findByName(electronics)).thenReturn(Optional.of(storedCategory));
         when(productRepository.save(product)).thenReturn(product);
 
         Product result = storageProductService.createProduct(product);
 
-        assertEquals("Electronics", result.getCategory().getName());
-        verify(categoryRepository).findByName("Electronics");
+        assertEquals(electronics, result.getCategory().getName());
+        verify(categoryRepository).findByName(electronics);
     }
 
     @Test
     void createProduct_whenCategoryDoesNotExist_savesNewCategory() {
+        String books = "Books";
+
         Category category = new Category();
-        category.setName("Books");
+        category.setName(books);
         Product product = new Product();
         product.setCategory(category);
         product.setName("Clean Code");
 
-        when(categoryRepository.findByName("Books")).thenReturn(Optional.empty());
+        when(categoryRepository.findByName(books)).thenReturn(Optional.empty());
         when(categoryRepository.save(category)).thenReturn(category);
         when(productRepository.save(product)).thenReturn(product);
 
         Product result = storageProductService.createProduct(product);
 
-        assertEquals("Books", result.getCategory().getName());
+        assertEquals(books, result.getCategory().getName());
         verify(categoryRepository).save(category);
     }
 
     @Test
     void replaceProduct_andUpdateProduct_delegateToRepository() {
+        String replacementString = "Replacement";
+        long id = 10L;
+
         Product replacement = new Product();
-        replacement.setName("Replacement");
+        replacement.setName(replacementString);
         when(productRepository.save(replacement)).thenReturn(replacement);
 
-        Product replaceResult = storageProductService.replaceProduct(10L, replacement);
-        Product updateResult = storageProductService.updateProduct(10L, replacement);
+        Product replaceResult = storageProductService.replaceProduct(id, replacement);
+        Product updateResult = storageProductService.updateProduct(id, replacement);
 
-        assertEquals("Replacement", replaceResult.getName());
-        assertEquals("Replacement", updateResult.getName());
+        assertEquals(replacementString, replaceResult.getName());
+        assertEquals(replacementString, updateResult.getName());
         verify(productRepository, times(2)).save(replacement);
     }
 
     @Test
     void deleteProduct_callsRepositoryDeleteById() {
-        storageProductService.deleteProduct(9L);
+        long id = 9L;
 
-        verify(productRepository).deleteById(9L);
+        storageProductService.deleteProduct(id);
+        verify(productRepository).deleteById(id);
     }
 }
