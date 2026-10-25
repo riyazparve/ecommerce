@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@EnableJpaRepositories(basePackages = "com.riyaz.ecom.productcatalog.repository")
+@EnableJpaRepositories(basePackages = "com.riyaz.ecom.productcatalog.repositories")
 public class ProductCatalogServiceApplication {
 
     public static void main(String[] args) {

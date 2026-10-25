@@ -1,12 +1,12 @@
 package com.riyaz.ecom.productcatalog;
 
-import com.riyaz.ecom.productcatalog.dto.CategoryDto;
-import com.riyaz.ecom.productcatalog.dto.FakeStoreProductDto;
-import com.riyaz.ecom.productcatalog.dto.ProductDto;
-import com.riyaz.ecom.productcatalog.mapper.FakeStoreProductDtoMapper;
-import com.riyaz.ecom.productcatalog.mapper.ProductDtoMapper;
-import com.riyaz.ecom.productcatalog.model.Category;
-import com.riyaz.ecom.productcatalog.model.Product;
+import com.riyaz.ecom.productcatalog.dtos.CategoryDto;
+import com.riyaz.ecom.productcatalog.dtos.FakeStoreProductDto;
+import com.riyaz.ecom.productcatalog.dtos.ProductDto;
+import com.riyaz.ecom.productcatalog.mappers.FakeStoreProductDtoMapper;
+import com.riyaz.ecom.productcatalog.mappers.ProductDtoMapper;
+import com.riyaz.ecom.productcatalog.models.Category;
+import com.riyaz.ecom.productcatalog.models.Product;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

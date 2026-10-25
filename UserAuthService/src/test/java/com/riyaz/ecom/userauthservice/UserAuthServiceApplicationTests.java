@@ -10,4 +10,9 @@ class UserAuthServiceApplicationTests {
     void contextLoads() {
     }
 
+//    @Test
+//    void applicationMainRunsWithoutWebServer() {
+//        assertDoesNotThrow(() -> UserAuthServiceApplication.main(new String[]{"--spring.main.web-application-type=none"}));
+//    }
+
 }

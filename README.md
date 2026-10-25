@@ -58,7 +58,7 @@ Lecture 100.0% Assignment 5 / 5 Additional Problem -
 
 Day 181, 13 Jul Backend Projects: Implementing UserAuthService Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
 - Created new spring boot project UserAuthService
--
+- Added Models, Controller, Service, Repositories
 
 Day 182, 15 Jul Backend Projects: JWT Generation and Validation Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
 
