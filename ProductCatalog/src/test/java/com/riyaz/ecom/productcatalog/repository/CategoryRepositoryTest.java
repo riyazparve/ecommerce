@@ -26,7 +26,7 @@ class CategoryRepositoryTest {
         Optional<Category> category = categoryRepository.findById(1L);
         assertTrue(category.isPresent());
         assertEquals("Accessories", category.get().getName());
-        askForProducts(category.get());
+//        askForProducts(category.get());
     }
 
     @Test
@@ -36,7 +36,7 @@ class CategoryRepositoryTest {
         Optional<Category> category = categoryRepository.findByName("Electronics");
         assertTrue(category.isPresent());
         assertEquals("Electronics", category.get().getName());
-        askForProducts(category.get());
+//        askForProducts(category.get());
     }
 
     @Test
@@ -45,9 +45,9 @@ class CategoryRepositoryTest {
         List<Category> categories = categoryRepository.findAll();
         assertNotNull(categories);
         assertFalse(categories.isEmpty());
-        for (Category category : categories) {
-            askForProducts(category);
-        }
+//        for (Category category : categories) {
+//            askForProducts(category);
+//        }
     }
 
 

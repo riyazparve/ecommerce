@@ -18,6 +18,6 @@ public class Category extends BaseModel {
     private String name;
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SELECT)
-    @BatchSize(size = 2)
+//    @BatchSize(size = 2)
     private List<Product> products;
 }
