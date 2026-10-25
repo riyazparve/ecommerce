@@ -6,17 +6,19 @@ import jakarta.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "student")
 public class Student {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name")
     private String name;
 
-    @ManyToMany(mappedBy = "students")
+    @ManyToMany
+    @JoinTable(
+            name = "students_teachers", // Matches test Table Name
+            joinColumns = @JoinColumn(name = "student_id"), // Matches test Column
+            inverseJoinColumns = @JoinColumn(name = "teacher_id") // Matches test Column
+    )
     private Set<Teacher> teachers;
 
     @OneToMany(mappedBy = "student")

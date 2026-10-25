@@ -5,6 +5,8 @@ import com.riyaz.ecom.productcatalog.model.Product;
 import com.riyaz.ecom.productcatalog.repository.CategoryRepository;
 import com.riyaz.ecom.productcatalog.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Primary
+@Qualifier("storageProductService")
+// matchIfMissing = true configures this as the fallback option if no property is defined
+@ConditionalOnProperty(name = "product.service.selected-service", havingValue = "storageProductService", matchIfMissing = true)
 public class StorageProductService implements IProductService{
     @Autowired
     private ProductRepository productRepository;
@@ -48,5 +52,20 @@ public class StorageProductService implements IProductService{
         }
         
         return productRepository.save(product);
+    }
+
+    @Override
+    public Product replaceProduct(Long id, Product product) {
+        return productRepository.save(product);
+    }
+
+    @Override
+    public Product updateProduct(Long id, Product product) {
+        return productRepository.save(product);
+    }
+
+    @Override
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
     }
 }
