@@ -1,6 +1,24 @@
 # ecommerce
 Backend project using Spring Boot framework with best practices
 
+## UserAuthService JWT signing key
+
+`UserAuthService` reads its HS256 signing key from the `JWT_SECRET` environment
+variable. Set it to the Base64 encoding of at least 32 cryptographically random
+bytes, and keep the same value across restarts and application instances. Do
+not commit the secret or put it in application properties; use an environment
+variable locally and a secrets manager in production.
+
+Generate a key once in PowerShell with:
+
+```powershell
+[Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
+
+Configure the resulting value as `JWT_SECRET` in the environment used to launch
+the application. Generating a new value replaces the signing key and invalidates
+tokens issued with the previous one.
+
 Day 162, 10 Jun Backend Projects: Intro to Backend Module Mastery Mode 💪 Achieved Lecture 100.0% Assignment 15 / 15 Additional Problem -
 
 Day 164, 12 Jun Backend Projects: Version Control and Git Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -

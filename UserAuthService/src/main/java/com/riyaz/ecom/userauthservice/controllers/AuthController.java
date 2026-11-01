@@ -6,11 +6,13 @@ import com.riyaz.ecom.userauthservice.models.User;
 import com.riyaz.ecom.userauthservice.services.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.util.Pair;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -42,12 +44,43 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto loginRequestDto) {
-        User loggedInUser;
+        Pair<User, String> loggedInUser;
         try {
             loggedInUser = authService.login(loginRequestDto.getEmail(), loginRequestDto.getPassword());
+            MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+            headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + loggedInUser.getSecond());
+            return new ResponseEntity<>(userMapper.toDto(loggedInUser.getFirst()), headers, HttpStatus.OK);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-        return ResponseEntity.ok(userMapper.toDto(loggedInUser));
+    }
+
+    @PostMapping("/validateToken")
+    public ResponseEntity<Boolean> validateToken(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
+        String token = extractBearerToken(authorizationHeader);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        }
+        return ResponseEntity.ok(authService.validateToken(token));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorizationHeader) {
+        String token = extractBearerToken(authorizationHeader);
+        if (token == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        authService.logout(token);
+        return ResponseEntity.ok().build();
+    }
+
+    private String extractBearerToken(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.regionMatches(true, 0, "Bearer ", 0, 7)) {
+            return null;
+        }
+        String token = authorizationHeader.substring(7).trim();
+        return token.isEmpty() || token.chars().anyMatch(Character::isWhitespace) ? null : token;
     }
 }
