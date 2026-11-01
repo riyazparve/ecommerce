@@ -1,106 +1,89 @@
-# ecommerce
-Backend project using Spring Boot framework with best practices
+# Ecommerce Backend
 
-## UserAuthService JWT signing key
+This repository is a Maven multi-module workspace for backend learning projects. It contains two standalone Spring Boot services and a separate JPA practice application. The root project is an aggregator and dependency-parent POM; it does not start a server itself.
 
-`UserAuthService` reads its HS256 signing key from the `JWT_SECRET` environment
-variable. Set it to the Base64 encoding of at least 32 cryptographically random
-bytes, and keep the same value across restarts and application instances. Do
-not commit the secret or put it in application properties; use an environment
-variable locally and a secrets manager in production.
+## Architecture
 
-Generate a key once in PowerShell with:
+```mermaid
+flowchart TD
+    Client[HTTP client]
+    Parent["ecommerce (Maven parent / reactor)"]
+    Catalog["ProductCatalog<br/>Product REST API"]
+    Auth["UserAuthService<br/>Signup, login, JWT sessions"]
+    Demo["jpa-demo<br/>JPA relationship and CRUD examples"]
+    Store["H2 or MySQL<br/>product persistence"]
+    FakeStore["FakeStore API<br/>optional product provider"]
+    AuthDB["H2 or MySQL<br/>users, roles, sessions"]
+    DemoDB["MySQL<br/>JPA demo entities"]
+
+    Parent -. builds .-> Catalog
+    Parent -. builds .-> Auth
+    Parent -. builds .-> Demo
+    Client --> Catalog
+    Client --> Auth
+    Client --> Demo
+    Catalog --> Store
+    Catalog --> FakeStore
+    Auth --> AuthDB
+    Demo --> DemoDB
+```
+
+The three applications are sibling modules: each has its own Spring Boot entry point, HTTP controllers, services, and persistence configuration. They are not wired together through an API gateway or service-to-service calls in this repository. A client can call each application's REST API directly. `ProductCatalog` can use either its JPA repositories or the FakeStore client, selected by configuration. `UserAuthService` handles credentials and JWT-backed sessions independently; the other applications do not currently enforce its tokens.
+
+| Module | Responsibility | Main technologies |
+| --- | --- | --- |
+| [`ProductCatalog`](ProductCatalog/README.md) | Product CRUD, catalog search, paging, and sorting | Spring Web, Spring Data JPA, MySQL/H2, optional FakeStore integration |
+| [`UserAuthService`](UserAuthService/README.md) | User signup/login, password hashing, JWT validation, and logout | Spring Web, Spring Data JPA, BCrypt, JJWT, MySQL/H2 |
+| [`jpa-demo`](jpa-demo/README.md) | Instagram-style CRUD and entity relationship examples, plus education-domain entities | Spring Web, Spring Data JPA, MySQL, MapStruct |
+
+`ProductCatalog` and `UserAuthService` both use port `8080` by default, so choose a different `server.port` when running them at the same time. `jpa-demo` uses port `9090`.
+
+## Technology and repository layout
+
+- Java 17 and Spring Boot 3.5.16
+- Maven wrapper at the repository root (`mvnw.cmd` on Windows)
+- Each module has its own `pom.xml`, application source, configuration, and tests.
+- Root `pom.xml` aggregates `ProductCatalog`, `jpa-demo`, and `UserAuthService`.
+
+## Build and test
+
+From the repository root in PowerShell:
+
+```powershell
+.\mvnw.cmd clean verify
+```
+
+To build or test an individual module:
+
+```powershell
+.\mvnw.cmd -pl ProductCatalog verify
+.\mvnw.cmd -pl UserAuthService verify
+.\mvnw.cmd -pl jpa-demo verify
+```
+
+## Run an application
+
+Run one module at a time from the repository root:
+
+```powershell
+# H2 and FakeStore-backed product service
+.\mvnw.cmd -pl ProductCatalog -Dspring-boot.run.profiles=local spring-boot:run
+
+# H2-backed authentication service
+.\mvnw.cmd -pl UserAuthService -Dspring-boot.run.profiles=local spring-boot:run
+
+# JPA demo (configure its MySQL database first)
+.\mvnw.cmd -pl jpa-demo spring-boot:run
+```
+
+The `dev` profiles for `ProductCatalog` and `UserAuthService` are configured for MySQL; `local` uses an in-memory H2 database. `jpa-demo` currently uses MySQL configuration in `src/main/resources/application.properties`. Set up its database and configure credentials before starting it. See each module README for its APIs and configuration.
+
+## Authentication signing key
+
+Set `JWT_SECRET` for `UserAuthService` to the Base64 encoding of at least 32 cryptographically random bytes. Keep the same value across restarts and application instances, and provide it through the runtime environment or a secrets manager—not in source control or committed application settings. For example, generate a key in PowerShell:
 
 ```powershell
 [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
 ```
 
-Configure the resulting value as `JWT_SECRET` in the environment used to launch
-the application. Generating a new value replaces the signing key and invalidates
-tokens issued with the previous one.
-
-Day 162, 10 Jun Backend Projects: Intro to Backend Module Mastery Mode 💪 Achieved Lecture 100.0% Assignment 15 / 15 Additional Problem -
-
-Day 164, 12 Jun Backend Projects: Version Control and Git Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-
-Day 165, 15 Jun Backend Projects: Learning Git Commands Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-
-Day 167, 17 Jun Backend Projects: Intro to Spring Framework and APIs Mastery Mode 💪 Achieved Lecture 100.0% Assignment 6 / 6 Additional Problem -
-
-Day 168, 19 Jun Backend Projects: MVC, Requests in Spring and Starting first microservice Mastery Mode 💪 Achieved Lecture 100.0% Assignment 7 / 7 Additional Problem -
-- Created new spring boot project Product Catalog
-- Added Models, Controller, Service
-
-
-Day 170, 22 Jun Backend Projects: Calling 3rd Party APIs Mastery Mode 💪 Achieved Lecture 100.0% Assignment 6 / 6 Additional Problem -
-- Product catalog continue
-- Added Basic Controller Endpoints GetAllProducts, getProductById, createProduct
-- Created Input DTO, Dummy Serice Layer
-
-Day 171, 24 Jun Backend Projects: RestTemplate & Handling Exceptions Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-- Product catalog continue
-- Change Basic Controller Endpoints to return ResponseEntity with appropriate HttpStatusCode
-- Added Mapper methods to and from DTO
-- Added RestTemplate to Connect FakeStore 3rd party integration (in place of repo)
-- Added Mapper methods to and from FakeStoreDTO
-
-Day 172, 26 Jun Backend Projects: Intro to Spring Data JPA Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-- Product catalog continue
-- Added JPA Dependency and Database integration
-- Added Models (entity)
-
-Day 173, 29 Jun Backend Projects: UUIDs, Representing Inheritance Mastery Mode 💪 Achieved Lecture 100.0% Assignment 6 / 6 Additional Problem -
-- Product catalog continue
-- Added Exception handlers and RestControllerAdvice
-- Controllers now throw IllegalArgumentException for invalid inputs
-
-Day 174, 1 Jul Backend Projects: JPA Queries, Repositories Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-- Product catalog continue
-- Added support for JPA Inheritance Types @Inheritance, @PrimaryKeyJoinColumn
-- Changed controller dummy implementation to call service layer
-
-Day 175, 3 Jul Backend Projects: Fetch Types and Modes Mastery Mode -
-Lecture 100.0% Assignment 5 / 5 Additional Problem -
-- Product catalog continue
-- JPA FetchTypes - Eager/Lazy FetchModes - Select / Join / Sub select
-- Added test for testNPlusOneProblem
-
-Day 176, 6 Jul Backend Projects: Unit Testing and Good Practices Mastery Mode 💪 Achieved Lecture 100.0% Assignment 14 / 14 Additional Problem -
-- Product catalog continue
-- Added Unit test cases for service and controller
-
-Day 177, 8 Jul Backend Projects: Mocking and Writing UTs Mastery Mode 💪 Achieved Lecture 100.0% Assignment 15 / 15 Additional Problem -
-
-Day 178, 10 Jul Backend Projects: Authentication v/s Authorization, OAuth2, JWT Mastery Mode -
-Lecture 100.0% Assignment 5 / 5 Additional Problem -
-
-Day 181, 13 Jul Backend Projects: Implementing UserAuthService Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-- Created new spring boot project UserAuthService
-- Added Models, Controller, Service, Repositories
-
-Day 182, 15 Jul Backend Projects: JWT Generation and Validation Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-
-Day 183, 17 Jul Backend Projects: Deploying Applications to AWS Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-
-Day 184, 20 Jul Backend Projects: EBS, RDS Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-
-Day 185, 22 Jul Backend Projects: Implementing Search: Paging, Sorting Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-- Product catalog continue
-- Added support for Sorting, Paging and Searching
-- Added AWS Settings
-
-Day 186, 24 Jul Backend Projects: Creating Payment Microservice Mastery Mode 💪 Achieved Lecture 100.0% Assignment 5 / 5 Additional Problem -
-- Created new spring boot project PaymentService
-
-Day 187, 27 Jul Backend projects: Creating Webhook . Reconciliation Mastery Mode 💪 Achieved Lecture 100.0% Assignment 4 / 4 Additional Problem -
-
-Day 188, 29 Jul Backend projects: Using Kafka for ASync Comms Mastery Mode 💪 Achieved Lecture 100.0% Assignment 8 / 8 Additional Problem -
-- Product catalog continue
-- Added Service Discovery client support getProductBasedOnUserRole
-- Created new project Service Discovery server @EnableEurekaServer
-
-
-Day 189, Today Backend Project: Spring Cloud group-
-icon3 Mastery Mode Ends in 06d 13h 26m 22s Lecture 100.0% Assignment 4 / 15 Additional Problem -
-
-Day 190, 4 Aug Backend Projects: Docker
+Changing the key invalidates tokens signed with the previous key. The local profile uses an in-memory database, so its user/session data is lost when the process stops.
