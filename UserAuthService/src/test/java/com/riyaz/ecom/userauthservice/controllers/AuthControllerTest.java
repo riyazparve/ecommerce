@@ -118,4 +118,58 @@ class AuthControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(Boolean.TRUE, response.getBody());
     }
+
+    @Test
+    void validateTokenRejectsMissingAuthorizationHeader() {
+        ResponseEntity<Boolean> response = authController.validateToken(null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(Boolean.FALSE, response.getBody());
+        verify(authService, never()).validateToken(anyString());
+    }
+
+    @Test
+    void validateTokenReturnsFalseWhenServiceRejectsToken() {
+        when(authService.validateToken("invalid-token")).thenReturn(false);
+
+        ResponseEntity<Boolean> response = authController.validateToken("Bearer invalid-token");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(Boolean.FALSE, response.getBody());
+        verify(authService).validateToken("invalid-token");
+    }
+
+    @Test
+    void validateTokenRejectsBearerHeaderWithWhitespaceInsideToken() {
+        ResponseEntity<Boolean> response = authController.validateToken("Bearer jwt token");
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertEquals(Boolean.FALSE, response.getBody());
+        verify(authService, never()).validateToken(anyString());
+    }
+
+    @Test
+    void logoutReturnsUnauthorizedWhenAuthorizationHeaderIsMissing() {
+        ResponseEntity<Void> response = authController.logout(null);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(authService, never()).logout(anyString());
+    }
+
+    @Test
+    void logoutReturnsUnauthorizedWhenAuthorizationHeaderIsMalformed() {
+        ResponseEntity<Void> response = authController.logout("Bearer   ");
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        verify(authService, never()).logout(anyString());
+    }
+
+    @Test
+    void logoutPassesBearerTokenToService() {
+        ResponseEntity<Void> response = authController.logout("Bearer jwt-token");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNull(response.getBody());
+        verify(authService).logout("jwt-token");
+    }
 }

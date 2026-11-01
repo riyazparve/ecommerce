@@ -133,6 +133,15 @@ class AuthServiceTest {
     }
 
     @Test
+    void loginRejectsNullPassword() {
+        User user = activeUser();
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+
+        assertThrows(RuntimeException.class, () -> authService.login(user.getEmail(), null));
+        verify(userSessionRepository, never()).save(any(UserSession.class));
+    }
+
+    @Test
     void loginCreatesOneSessionAndReturnsAValidToken() {
         User user = activeUser();
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
@@ -147,6 +156,21 @@ class AuthServiceTest {
     }
 
     @Test
+    void loginDeletesAnExistingActiveSession() {
+        User user = activeUser();
+        UserSession existingSession = new UserSession();
+        existingSession.setStatus(Status.ACTIVE);
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(userSessionRepository.findByUserAndStatus(user, Status.ACTIVE))
+                .thenReturn(Optional.of(existingSession));
+
+        authService.login(user.getEmail(), "correct-secret");
+
+        verify(userSessionRepository).delete(existingSession);
+        verify(userSessionRepository).save(any(UserSession.class));
+    }
+
+    @Test
     void validateTokenRejectsMalformedAndLoggedOutTokens() {
         assertFalse(authService.validateToken("not-a-jwt"));
 
@@ -157,6 +181,54 @@ class AuthServiceTest {
         authService.logout(token);
 
         assertFalse(authService.validateToken(token));
+    }
+
+    @Test
+    void validateUserSessionAcceptsAValidActiveSession() {
+        User user = activeUser();
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        String token = authService.login(user.getEmail(), "correct-secret").getSecond();
+
+        assertTrue(authService.validateUserSession(token));
+    }
+
+    @Test
+    void validateUserSessionRejectsAnInactiveSession() {
+        User user = activeUser();
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        String token = authService.login(user.getEmail(), "correct-secret").getSecond();
+        savedSession.get().setStatus(Status.INACTIVE);
+
+        assertFalse(authService.validateUserSession(token));
+    }
+
+    @Test
+    void getUserSessionReturnsTheRepositoryResult() {
+        UserSession session = new UserSession();
+        when(userSessionRepository.findByToken("jwt-token")).thenReturn(Optional.of(session));
+
+        assertSame(session, authService.getUserSession("jwt-token").orElseThrow());
+    }
+
+    @Test
+    void logoutMarksAnExistingSessionInactive() {
+        UserSession session = new UserSession();
+        session.setStatus(Status.ACTIVE);
+        savedSession.set(session);
+
+        authService.logout("jwt-token");
+
+        assertEquals(Status.INACTIVE, session.getStatus());
+        verify(userSessionRepository).save(session);
+    }
+
+    @Test
+    void logoutDoesNothingWhenSessionDoesNotExist() {
+        savedSession.set(null);
+
+        authService.logout("unknown-token");
+
+        verify(userSessionRepository, never()).save(any(UserSession.class));
     }
 
     @Test
