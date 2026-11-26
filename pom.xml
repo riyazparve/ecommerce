@@ -24,6 +24,7 @@
         <module>ProductCatalog</module>
         <module>jpa-demo</module>
         <module>UserAuthService</module>
+        <module>PaymentService</module>
     </modules>
 
     <properties>

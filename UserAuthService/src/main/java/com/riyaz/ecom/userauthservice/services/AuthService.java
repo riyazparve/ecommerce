@@ -11,8 +11,7 @@ import com.riyaz.ecom.userauthservice.repositories.UserSessionRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class AuthService implements IAuthService {
-    private final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -98,7 +97,7 @@ public class AuthService implements IAuthService {
         userSession.setToken(token);
         userSession.setStatus(Status.ACTIVE);
         userSession.setExpiration((Date) claims.get(Claims.EXPIRATION));
-        logger.info("User session generated for user: {} token length: {}", user.getEmail(), token.length());
+        log.info("User session generated for user: {} token length: {}", user.getEmail(), token.length());
         userSessionRepository.save(userSession);
     }
 
