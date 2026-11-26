@@ -74,9 +74,38 @@ Run one module at a time from the repository root:
 
 # JPA demo (configure its MySQL database first)
 .\mvnw.cmd -pl jpa-demo spring-boot:run
+
+# Payment service
+.\mvnw.cmd -f PaymentService\pom.xml spring-boot:run
+```
+
+Or, from the `PaymentService` directory:
+
+```powershell
+..\mvnw.cmd -f pom.xml spring-boot:run
 ```
 
 The `dev` profiles for `ProductCatalog` and `UserAuthService` are configured for MySQL; `local` uses an in-memory H2 database. `jpa-demo` currently uses MySQL configuration in `src/main/resources/application.properties`. Set up its database and configure credentials before starting it. See each module README for its APIs and configuration.
+
+### PaymentService API keys
+
+Copy `PaymentService/.env.example` to the ignored `PaymentService/.env`, then put your rotated API keys in that local file:
+
+```powershell
+if (-not (Test-Path PaymentService\.env)) {
+    Copy-Item PaymentService\.env.example PaymentService\.env
+}
+```
+
+Use Java properties format: one `NAME=value` per line, without `export` or shell-style quotes. PaymentService reads this file when launched from the repository root or its own directory. When launched from the root, `PaymentService/.env` takes precedence over a root-level `.env`; operating-system environment variables such as `STRIPE_API_KEY` take precedence over either file. Alternatively, set the variable in the same PowerShell window before starting the service:
+
+```powershell
+$env:STRIPE_API_KEY = 'your-new-stripe-secret-key'
+```
+
+Never commit `.env` or put real credentials in `.env.example` or application properties. Revoke and replace any API key that was previously exposed.
+
+PaymentService handles callbacks at separate endpoints: `/redirectUrl/razorpay` validates Razorpay payment-link callback signatures, and `/redirectUrl/stripe?session_id=...` retrieves the Stripe Checkout Session. Each endpoint acknowledges success only after verifying that payment was paid.
 
 ## Authentication signing key
 

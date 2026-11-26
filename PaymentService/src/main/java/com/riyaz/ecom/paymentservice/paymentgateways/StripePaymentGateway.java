@@ -4,6 +4,7 @@ import com.stripe.StripeClient;
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentLink;
 import com.stripe.model.Price;
+import com.stripe.model.checkout.Session;
 import com.stripe.param.PaymentLinkCreateParams;
 import com.stripe.param.PriceCreateParams;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +18,21 @@ public class StripePaymentGateway implements IPaymentGateway {
     @Value("${stripe.api.key}")
     private String apiKey;
 
-    private static final String REDIRECT_URL = "https://unworried-dancing-proponent.ngrok-free.dev/redirectUrl";
+    private static final String REDIRECT_URL =
+            "https://unworried-dancing-proponent.ngrok-free.dev/redirectUrl/stripe?session_id={CHECKOUT_SESSION_ID}";
+
+    public String getCheckoutSessionPaymentStatus(String sessionId) {
+        if (sessionId == null || sessionId.isBlank()) {
+            throw new IllegalArgumentException("Stripe checkout session ID is required");
+        }
+        try {
+            StripeClient client = new StripeClient(apiKey);
+            Session session = client.v1().checkout().sessions().retrieve(sessionId);
+            return session.getPaymentStatus();
+        } catch (StripeException e) {
+            throw new IllegalStateException("Unable to retrieve Stripe checkout session", e);
+        }
+    }
 
     @Override
     public String getPaymentLink(String orderId, Long amount, String customerPhone, String customerName, String customerEmail) {
@@ -54,15 +69,15 @@ public class StripePaymentGateway implements IPaymentGateway {
 
             PriceCreateParams params =
                     PriceCreateParams.builder()
-                            .setCurrency("usd")
+                            .setCurrency("INR")
                             .setUnitAmount(amount)
-                            .setRecurring(
-                                    PriceCreateParams.Recurring.builder()
-                                            .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
-                                            .build()
-                            )
+//                            .setRecurring(
+//                                    PriceCreateParams.Recurring.builder()
+//                                            .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
+//                                            .build()
+//                            )
                             .setProductData(
-                                    PriceCreateParams.ProductData.builder().setName("Gold Plan").build()
+                                    PriceCreateParams.ProductData.builder().setName("Purchase").build()
                             )
                             .build();
 

@@ -4,8 +4,7 @@ import com.riyaz.ecom.userauthservice.dtos.*;
 import com.riyaz.ecom.userauthservice.exceptions.UserAlreadyExistsException;
 import com.riyaz.ecom.userauthservice.models.User;
 import com.riyaz.ecom.userauthservice.services.AuthService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,13 +14,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
     private final AuthService authService;
     private final UserMapper userMapper;
-    private final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     public AuthController(AuthService authService, UserMapper userMapper) {
         this.authService = authService;
@@ -35,7 +34,7 @@ public class AuthController {
             User user = authService.signup(signupRequestDto.getName(), signupRequestDto.getEmail(), signupRequestDto.getPhoneNumber(), signupRequestDto.getPassword());
             signupResponseDto = new SignupResponseDto("Successful", userMapper.toDto(user));
         } catch (UserAlreadyExistsException e) {
-            logger.error("User signup failed", e);
+            log.error("User signup failed", e);
             signupResponseDto = new SignupResponseDto(e.getMessage(), null);
             return ResponseEntity.badRequest().body(signupResponseDto);
         }
